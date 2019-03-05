@@ -1,3 +1,6 @@
+name = "optimizely_manager"
+__all__ = ['OptimizelyManager']
+
 import logging
 import requests
 import json
