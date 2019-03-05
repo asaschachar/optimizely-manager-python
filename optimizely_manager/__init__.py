@@ -38,7 +38,7 @@ class _UinintializedClient():
 class _OptimizelyManagerSingleton:
   def __init__(self, sdk_key=None, debug=False, **kwargs):
     self._timer = None
-    self.interval = 5
+    self.interval = 1 # TODO: Provide configurability
     self.is_running = False
     self.start()
     self.current_datafile = {}
