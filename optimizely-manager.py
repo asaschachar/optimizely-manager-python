@@ -60,7 +60,6 @@ class _OptimizelyManagerSingleton:
       self.current_datafile = latest_datafile
 
       # The datafile is different! Let's re-instantiate the client
-      # TODO (add lock around client)
       self.lock.acquire()
       self.optimizely_client_instance = optimizely.Optimizely(
         datafile=latest_datafile,
@@ -91,7 +90,7 @@ class _OptimizelyManagerSingleton:
     self.lock.release()
     return result
 
-  def getClient():
+  def get_client(self):
     return self
 
 
