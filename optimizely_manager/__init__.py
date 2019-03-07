@@ -46,7 +46,6 @@ class _OptimizelyManagerSingleton:
     self.debug = debug
     self.sdkParameters = kwargs
     self.optimizely_client_instance = _UinintializedClient(debug=debug)
-    self.lock = Lock()
 
     log_level = logging.DEBUG if debug else logging.WARNING
     self.logger = optimizely_logging.SimpleLogger(min_level=log_level)
@@ -63,13 +62,11 @@ class _OptimizelyManagerSingleton:
       self.current_datafile = latest_datafile
 
       # The datafile is different! Let's re-instantiate the client
-      self.lock.acquire()
       self.optimizely_client_instance = optimizely.Optimizely(
         datafile=latest_datafile,
         logger=self.logger,
         **self.sdkParameters,
       )
-      self.lock.release()
 
   def _run(self):
     self.is_running = False
@@ -87,10 +84,8 @@ class _OptimizelyManagerSingleton:
     self.is_running = False
 
   def is_feature_enabled(self, feature_key, user_id=None):
-    self.lock.acquire()
     user_id = user_id or str(random.randint(1, 100))
     result = self.optimizely_client_instance.is_feature_enabled(feature_key, user_id)
-    self.lock.release()
     return result
 
   def get_client(self):
