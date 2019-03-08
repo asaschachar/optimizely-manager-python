@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
   name="optimizely_manager",
-  version="1.0.1",
+  version="1.0.2",
   author="Asa Schachar",
   author_email="asa@optimizely.com",
   description="A manager which performs simple datafile management",
