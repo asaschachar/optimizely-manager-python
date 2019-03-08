@@ -6,7 +6,7 @@ import requests
 import json
 import random
 from optimizely import optimizely, logger as optimizely_logging
-from threading import Timer, Lock
+from threading import Timer
 
 
 class _UinintializedClient():
@@ -65,7 +65,7 @@ class _OptimizelyManagerSingleton:
       self.optimizely_client_instance = optimizely.Optimizely(
         datafile=latest_datafile,
         logger=self.logger,
-        **self.sdkParameters,
+        **self.sdkParameters
       )
 
   def _run(self):
