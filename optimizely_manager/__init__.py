@@ -10,44 +10,37 @@ from threading import Timer
 
 
 class _UinintializedClient():
-  def __init__(self, debug=False):
-    self.debug = debug
+  def __init__(self, log_level=None):
+    self.log_level = log_level or logging.DEBUG
 
   def is_feature_enabled(self, *args):
-    log_level = logging.DEBUG if self.debug else logging.WARNING
-    logger = optimizely_logging.SimpleLogger(min_level=log_level)
+    logger = optimizely_logging.SimpleLogger(min_level=self.log_level)
 
-    UNIINITIALIZED_ERROR = """MANAGER: isFeatureEnabled called but Optimizely not yet initialized.
+    UNIINITIALIZED_ERROR = """MANAGER: is_feature_enabled called but Optimizely not yet initialized.
 
       If you just started a web application or app server, try the request again.
 
       OR try moving your OptimizelyManager initialization higher in your application startup code
-      OR move your isFeatureEnabled call later in your application lifecycle.
+      OR move your is_feature_enabled call later in your application lifecycle.
 
       If this error persists, contact Optimizely!
 
       TODO: Enable a blocking for Optimizely through the manager
     """
-
-    if self.debug:
-      logger.log(logging.ERROR, UNIINITIALIZED_ERROR)
-    else:
-      logger.log(logging.DEBUG, UNIINITIALIZED_ERROR)
+    logger.log(logging.DEBUG, UNIINITIALIZED_ERROR)
 
 
 class _OptimizelyManagerSingleton:
-  def __init__(self, sdk_key=None, debug=False, **kwargs):
+  def __init__(self, sdk_key=None, log_level=None, **kwargs):
     self._timer = None
     self.interval = 1 # TODO: Provide configurability
     self.is_running = False
     self.start()
     self.current_datafile = {}
     self.sdk_key = sdk_key
-    self.debug = debug
+    self.log_level = log_level or logging.DEBUG
     self.sdkParameters = kwargs
-    self.optimizely_client_instance = _UinintializedClient(debug=debug)
-
-    log_level = logging.DEBUG if debug else logging.WARNING
+    self.optimizely_client_instance = _UinintializedClient(log_level=log_level)
     self.logger = optimizely_logging.SimpleLogger(min_level=log_level)
 
   def request_datafile(self):
@@ -84,7 +77,10 @@ class _OptimizelyManagerSingleton:
     self.is_running = False
 
   def is_feature_enabled(self, feature_key, user_id=None):
-    user_id = user_id or str(random.randint(1, 100))
+    if not user_id:
+      self.logger.log(logging.DEBUG, 'MANAGER: No user_id supplied to is_feature_enabled, using random string instead.')
+      user_id = user_id or str(random.randint(1, 100))
+
     result = self.optimizely_client_instance.is_feature_enabled(feature_key, user_id)
     return result
 
