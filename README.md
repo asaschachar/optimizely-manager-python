@@ -25,7 +25,7 @@ enabled = optimizely.is_feature_enabled("sale_price")
 If you are using a feature flag in another file, get the optimizely instance first                                                                        
 ```python
 from optimizely_manager import OptimizelyManager
-const optimizely = OptimizelyManager.instance.get_client();
+const optimizely = OptimizelyManager.get_client();
 enabled = optimizelyInstance.is_feature_enabled("sale_price")
 ```
 
