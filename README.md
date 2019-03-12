@@ -7,7 +7,7 @@ pip install git+git://github.com/asaschachar/optimizely-manager-python.git#v2.0.
  
 ## Setup 
 At your application startup:
-```
+```python
 from optimizely_manager import OptimizelyManager
 optimizely = OptimizelyManager(
   sdk_key='XFjmGNFQK1snQExC1vgynY' # This is your real SDK Key.
@@ -18,18 +18,18 @@ optimizely.start_live_updates(update_interval_sec=1) # Non-blocking polling thre
 
 ## Usage
 When you want to use a feature flag:
-```
+```python
 enabled = optimizely.is_feature_enabled("sale_price")
 ```                                                                     
                                                                         
 If you are using a feature flag in another file, get the optimizely instance first                                                                        
-```
+```python
 from optimizely_manager import OptimizelyManager
 const optimizely = OptimizelyManager.instance.get_client();
 enabled = optimizelyInstance.is_feature_enabled("sale_price")
 ```
 
 ## Other APIs
-```
+```python
 optimizely.start_polling_thread(update_interval_sec=1)
 ```
