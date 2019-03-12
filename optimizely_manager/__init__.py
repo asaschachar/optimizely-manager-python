@@ -87,6 +87,15 @@ class _OptimizelyManagerSingleton:
   def get_client(self):
     return self
 
+  def fetchConfiguration(self, timeout=500):
+    pass
+
+  def startPollingThread(self, update_interval=1000):
+    pass
+
+  def startLiveUpdates(self, update_interval=1000):
+    pass
+
 
 class OptimizelyManager:
 
@@ -98,3 +107,13 @@ class OptimizelyManager:
 
   def is_feature_enabled(self, feature_key, user_id=None):
     return OptimizelyManager.instance.is_feature_enabled(feature_key, user_id=user_id)
+
+  def fetchConfiguration(self, timeout=500):
+    pass
+
+  def startPollingThread(self, update_interval=1000):
+    pass
+
+  def startLiveUpdates(self, update_interval=1000):
+    pass
+
