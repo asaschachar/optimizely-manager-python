@@ -2,7 +2,7 @@
                                                                         
 ## Installation
 ```
-pip install git+git://github.com/asaschachar/optimizely-manager-python.git#v1.1.1
+pip install git+git://github.com/asaschachar/optimizely-manager-python.git#v2.0.0
 ```
  
 ## Setup 
