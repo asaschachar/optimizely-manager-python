@@ -10,7 +10,7 @@ At your application startup:
 ```python
 from optimizely_manager import OptimizelyManager
 optimizely = OptimizelyManager(
-  sdk_key='XFjmGNFQK1snQExC1vgynY' # This is your real SDK Key.
+  sdk_key='XFjmGNFQK1snQExC1vgynY'
 )
 optimizely.fetch_configuration(timeout_ms=500) # Blocking fetch for feature configuration
 optimizely.start_live_updates(update_interval_sec=1) # Non-blocking polling thread for feature configuration
