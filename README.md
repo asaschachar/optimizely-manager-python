@@ -29,7 +29,7 @@ enabled = optimizelyInstance.is_feature_enabled("sale_price")
 
 ## Other APIs
 ```
-optimizely.fetchConfiguration(timeout=500)
-optimizely.startPollingThread(update_interval=10000)
-optimizely.startLiveUpdates(update_interval=10000)
+optimizely.fetch_configuration(timeout_ms=500)
+optimizely.start_live_updates(update_interval_sec=1)
+optimizely.start_polling_thread(update_interval_sec=1)
 ```
