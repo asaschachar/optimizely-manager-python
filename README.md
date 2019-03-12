@@ -26,3 +26,10 @@ from optimizely_manager import OptimizelyManager
 const optimizely = OptimizelyManager.instance.get_client();
 enabled = optimizelyInstance.is_feature_enabled("sale_price")
 ```
+
+## Other APIs
+```
+optimizely.fetchConfiguration(timeout=500)
+optimizely.startPollingThread(update_interval=10000)
+optimizely.startLiveUpdates(update_interval=10000)
+```
