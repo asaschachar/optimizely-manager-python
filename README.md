@@ -10,8 +10,10 @@ At your application startup:
 ```
 from optimizely_manager import OptimizelyManager
 optimizely = OptimizelyManager(
-  sdk_key='C3666onUgdBu8gchQfqzva',
+  sdk_key='XFjmGNFQK1snQExC1vgynY' # This is your real SDK Key.
 )
+optimizely.fetch_configuration(timeout_ms=500) # Blocking fetch for feature configuration
+optimizely.start_live_updates(update_interval_sec=1) # Non-blocking polling thread for feature configuration
 ```
 
 ## Usage
@@ -29,7 +31,5 @@ enabled = optimizelyInstance.is_feature_enabled("sale_price")
 
 ## Other APIs
 ```
-optimizely.fetch_configuration(timeout_ms=500)
-optimizely.start_live_updates(update_interval_sec=1)
 optimizely.start_polling_thread(update_interval_sec=1)
 ```
