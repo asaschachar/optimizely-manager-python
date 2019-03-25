@@ -11,14 +11,17 @@ from threading import Timer
 
 
 class _Singleton(type):
+  """ Singleton interface to ensure there is only one instance of the
+  Optimizely Manager at once """
     _instances = {}
     def __call__(cls, *args, **kwargs):
-        if cls not in cls._instances:
-            cls._instances[cls] = super(_Singleton, cls).__call__(*args, **kwargs)
+      if cls not in cls._instances:
+        cls._instances[cls] = super(_Singleton, cls).__call__(*args, **kwargs)
         return cls._instances[cls]
 
 
 class _UinintializedClient():
+  """ Dummy Optimizely Client for when the datafile has not been fetched yet."""
   def __init__(self, log_level=None):
     self.log_level = log_level or logging.DEBUG
 
@@ -40,11 +43,21 @@ class _UinintializedClient():
 
 
 class _OptimizelyManager(with_metaclass(_Singleton)):
+  """ Convenience wrapper for the SDK that provides convenience methods for datafile management """
   def __init__(self, sdk_key=None, log_level=None, **kwargs):
     self._timer = None
     self.is_running = False
 
   def configure(self, sdk_key=None, log_level=None, **kwargs):
+    """ Initialize the datafile manager with settings that are also passed to
+    the core Optimizely SDK
+
+    Parameters:
+      sdk_key (string): Key specific to your Optimizely project and environment for fetching the correct datafile
+      log_level (string): Log level for the SDK to log to console.
+      **kwargs: See Optimizely SDK create_instance parameters
+
+    """
     self.current_datafile = { 'revision': '0' }
     self.sdk_key = sdk_key
     self.log_level = log_level or logging.DEBUG
@@ -88,17 +101,30 @@ class _OptimizelyManager(with_metaclass(_Singleton)):
     self.is_running = False
 
   def get_client(self):
+    """ Returns an Optimizely client instance """
     return self.optimizely_client_instance
 
-  def fetch_configuration(self, timeout_ms=500):
+  def fetch_datafile(self, timeout_ms=500):
+    """ Blocking request to fetch the datafile.
+
+    Parameters:
+      timeout_ms (int): Max number of milliseconds to block the main thread
+    """
     self.logger.log(logging.INFO, 'Optimizely: Blocking fetch for feature configuration')
     self.request_datafile(timeout=(timeout_ms / 1000))
 
   def start_live_updates(self, update_interval_sec=1):
+    """ Start a separate background thread that will poll for updates to the datafile on
+    an interval of update_interval_sec seconds
+
+    Parameters:
+      update_interval_sec (int): Seconds to wait in between requesting the datafile on the polling thread
+    """
     self.logger.log(logging.INFO, 'Optimizely: Starting background thread to poll for feature configuration updates')
     self._start(update_interval_sec)
 
   def stop_live_updates(self):
+    """ Method to stop the background thread from requesting another datafile """
     self._stop();
 
 
