@@ -31,9 +31,4 @@ enabled = optimizely.is_feature_enabled("sale_price", user_id)
 ```
 
 ## TODO
-- Polish doc strings
-- Ensure basic datafile configuration is available like timeout and pollingInterval
-- Expose the manager with a cleaner interface
-- Allow passing in the SDK as a parameter
 - Add some tests
->>>>>>> Update the API
