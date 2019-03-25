@@ -1,12 +1,21 @@
 name = "optimizely_manager"
-__all__ = ['OptimizelyManager']
+__all__ = ['optimizely_manager']
 
 import logging
 import requests
 import json
 import random
+from six import with_metaclass
 from optimizely import optimizely, logger as optimizely_logging
 from threading import Timer
+
+
+class _Singleton(type):
+    _instances = {}
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(_Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
 
 
 class _UinintializedClient():
@@ -16,7 +25,7 @@ class _UinintializedClient():
   def is_feature_enabled(self, *args):
     logger = optimizely_logging.SimpleLogger(min_level=self.log_level)
 
-    UNIINITIALIZED_ERROR = """MANAGER: is_feature_enabled called but Optimizely not yet initialized.
+    UNIINITIALIZED_ERROR = """Optimizely: is_feature_enabled called but Optimizely not yet initialized.
 
       If you just started a web application or app server, try the request again.
 
@@ -30,89 +39,67 @@ class _UinintializedClient():
     logger.log(logging.INFO, UNIINITIALIZED_ERROR)
 
 
-class _OptimizelyManagerSingleton:
+class _OptimizelyManager(with_metaclass(_Singleton)):
   def __init__(self, sdk_key=None, log_level=None, **kwargs):
     self._timer = None
     self.is_running = False
-    self.current_datafile = {}
+
+  def configure(self, sdk_key=None, log_level=None, **kwargs):
+    self.current_datafile = { 'revision': '0' }
     self.sdk_key = sdk_key
     self.log_level = log_level or logging.DEBUG
     self.sdkParameters = kwargs
     self.optimizely_client_instance = _UinintializedClient(log_level=log_level)
     self.logger = optimizely_logging.SimpleLogger(min_level=log_level)
 
-  def request_datafile(self):
+  def request_datafile(self, timeout=None):
     DATAFILE_URL = 'https://cdn.optimizely.com/datafiles/%s.json' % self.sdk_key
 
-    latest_datafile = requests.get(DATAFILE_URL).text
-    current_datafile_string = json.dumps(self.current_datafile, sort_keys=True)
-    latest_datafile_string = json.dumps(latest_datafile, sort_keys=True)
+    try:
+      latest_datafile = requests.get(DATAFILE_URL, timeout=timeout).json()
+    except:
+      self.logger.log(logging.WARNING, 'Optimizely: Timeout hit while trying to fetch the datafile')
+    else:
+      if int(self.current_datafile['revision']) < int(latest_datafile['revision']):
+        self.logger.log(logging.INFO, 'Optimizely: Received an updated datafile and is initializing')
+        self.current_datafile = latest_datafile
 
-    if current_datafile_string != latest_datafile_string:
-      self.logger.log(logging.INFO, 'MANAGER: Received an updated datafile and is initializing')
-      self.current_datafile = latest_datafile
+        # TODO: Preserve the notification center
+        # The datafile is different! Let's re-instantiate the client
+        self.optimizely_client_instance = optimizely.Optimizely(
+          datafile=json.dumps(latest_datafile),
+          logger=self.logger,
+          **self.sdkParameters
+        )
 
-      # The datafile is different! Let's re-instantiate the client
-      self.optimizely_client_instance = optimizely.Optimizely(
-        datafile=latest_datafile,
-        logger=self.logger,
-        **self.sdkParameters
-      )
   def _run(self):
     self.is_running = False
-    self.start()
+    self._start()
     self.request_datafile()
 
-  def start(self, interval=1):
+  def _start(self, interval=1):
     if not self.is_running:
       self._timer = Timer(interval, self._run)
       self._timer.start()
       self.is_running = True
 
-  def stop(self):
+  def _stop(self):
     self._timer.cancel()
     self.is_running = False
 
-  def is_feature_enabled(self, feature_key, user_id=None):
-    if not user_id:
-      self.logger.log(logging.INFO, 'MANAGER: No user_id supplied to is_feature_enabled, using random string instead.')
-      user_id = user_id or str(random.randint(1, 100))
-
-    result = self.optimizely_client_instance.is_feature_enabled(feature_key, user_id)
-    return result
-
   def get_client(self):
-    return self
+    return self.optimizely_client_instance
 
   def fetch_configuration(self, timeout_ms=500):
-    self.logger.log(logging.INFO, 'MANAGER: Blocking fetch for feature configuration')
-    self.request_datafile()
-
-  def start_polling_thread(self, update_interval_sec=1):
-    self.logger.log(logging.INFO, 'MANAGER: Starting background thread to poll for feature configuration updates')
-    self.start(update_interval_sec)
+    self.logger.log(logging.INFO, 'Optimizely: Blocking fetch for feature configuration')
+    self.request_datafile(timeout=(timeout_ms / 1000))
 
   def start_live_updates(self, update_interval_sec=1):
-    self.logger.log(logging.INFO, 'MANAGER: Starting background thread to poll for feature configuration updates')
-    self.start(update_interval_sec)
+    self.logger.log(logging.INFO, 'Optimizely: Starting background thread to poll for feature configuration updates')
+    self._start(update_interval_sec)
+
+  def stop_live_updates(self):
+    self._stop();
 
 
-class OptimizelyManager:
-
-  instance = None
-
-  def __init__(self, *args, **kwargs):
-    if not OptimizelyManager.instance:
-      OptimizelyManager.instance = _OptimizelyManagerSingleton(*args, **kwargs)
-
-  def is_feature_enabled(self, feature_key, user_id=None):
-    return OptimizelyManager.instance.is_feature_enabled(feature_key, user_id=user_id)
-
-  def fetch_configuration(self, timeout_ms=500):
-    return OptimizelyManager.instance.fetch_configuration(timeout_ms=timeout_ms)
-
-  def start_polling_thread(self, update_interval_sec=1):
-    return OptimizelyManager.instance.start_polling_thread(update_interval_sec=update_interval_sec)
-
-  def start_live_updates(self, update_interval_sec=1):
-    return OptimizelyManager.instance.start_live_updates(update_interval_sec=update_interval_sec)
+optimizely_manager = _OptimizelyManager()
