@@ -79,7 +79,7 @@ class _OptimizelyManager(with_metaclass(_Singleton)):
         self.current_datafile = latest_datafile
 
         # TODO: Preserve the notification center
-        # The datafile is different! Let's re-instantiate the client
+        # TODO: Make this thread-safe
         self.optimizely_client_instance = optimizely.Optimizely(
           datafile=json.dumps(latest_datafile),
           logger=self.logger,
