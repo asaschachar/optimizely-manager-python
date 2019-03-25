@@ -25,6 +25,7 @@ class _UinintializedClient():
   def __init__(self, log_level=None):
     self.log_level = log_level or logging.DEBUG
 
+  # TODO: Add all methods that the SDK supports
   def is_feature_enabled(self, *args):
     logger = optimizely_logging.SimpleLogger(min_level=self.log_level)
 
