@@ -1,4 +1,4 @@
-# Optimizely Datafile Manager Python
+# Optimizely Manager Python
                                                                         
 ## Installation
 ```
